@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import html
 import logging
 import re
@@ -9,6 +10,7 @@ import time
 from praw import Reddit
 from praw.models.reddit.comment import Comment
 from praw.models.reddit.submission import Submission
+import yaml
 
 
 class Bot(object):
@@ -17,33 +19,32 @@ class Bot(object):
         self.r = r
         logging.info('Success.')
         self.subreddits = {}
-        for subreddit in SUBREDDITS:
-            logging.info('Checking subreddit: %s…', subreddit)
-            self.subreddits[subreddit] = {}
-            sub = self.subreddits[subreddit]
-            logging.info('Loading mods…')
-            sub['mods'] = list(mod.name for mod in
-                               self.r.subreddit(subreddit).moderator())
-            logging.info('Mods loaded: %s.', sub['mods'])
-            logging.info('Loading reasons…')
-            sub['reasons'] = yaml.load(html.unescape(
-                self.r.subreddit(subreddit).wiki['taskerbot'].content_md))
-            logging.info('Reasons loaded.')
+        logging.info('Checking subreddit: %s...', SUBREDDIT)
+        self.subreddits[SUBREDDIT] = {}
+        sub = self.subreddits[SUBREDDIT]
+        logging.info('Loading mods...')
+        sub['mods'] = list(mod.name for mod in
+                            self.r.subreddit(SUBREDDIT).moderator())
+        logging.info('Mods loaded: %s.', sub['mods'])
+        logging.info('Loading reasons...')
+        sub['reasons'] = yaml.load(html.unescape(
+            self.r.subreddit(SUBREDDIT).wiki['taskerbot'].content_md))
+        logging.info('Reasons loaded.')
 
     def refresh_sub(self, subreddit):
-        logging.info('Refreshing subreddit: %s…', subreddit)
+        logging.info('Refreshing subreddit: %s...', subreddit)
         sub = self.subreddits[subreddit]
-        logging.info('Loading mods…')
+        logging.info('Loading mods...')
         sub['mods'] = list(mod.name for mod in
                            self.r.subreddit(subreddit).moderator())
         logging.info('Mods loaded: %s.', sub['mods'])
-        logging.info('Loading reasons…')
+        logging.info('Loading reasons...')
         sub['reasons'] = yaml.load(html.unescape(
             self.r.subreddit(subreddit).wiki['taskerbot'].content_md))
         logging.info('Reasons loaded.')
 
     def check_comments(self, subreddit):
-        logging.info('Checking subreddit: %s…', subreddit)
+        logging.info('Checking subreddit: %s...', subreddit)
         sub = self.subreddits[subreddit]
         for comment in self.r.subreddit(subreddit).comments(limit=100):
             if (comment.banned_by or not comment.author or
@@ -54,7 +55,7 @@ class Bot(object):
             self.handle_report(subreddit, report, comment.parent())
 
     def check_reports(self, subreddit):
-        logging.info('Checking subreddit reports: %s…', subreddit)
+        logging.info('Checking subreddit reports: %s...', subreddit)
         for reported_submission in self.r.subreddit(subreddit).mod.reports():
             if not reported_submission.mod_reports:
                 continue
@@ -151,7 +152,7 @@ class Bot(object):
         logs_page.edit("{}{}  \n".format(logs_content, msg))
 
     def check_mail(self):
-        logging.info('Checking mail…')
+        logging.info('Checking mail...')
         for mail in self.r.inbox.unread():
             mail.mark_read()
             logging.info('New mail: "%s".', mail.body)
@@ -173,14 +174,14 @@ class Bot(object):
 
     def run(self):
         while True:
-            logging.info('Running cycle…')
+            logging.info('Running cycle...')
             try:
                 self.check_comments(SUBREDDIT)
                 self.check_reports(SUBREDDIT)
                 self.check_mail()
             except Exception as exception:
                 logging.exception(exception)
-            logging.info('Sleeping…')
+            logging.info('Sleeping...')
             time.sleep(32) # PRAW caches responses for 30s.
 
 
@@ -189,12 +190,12 @@ if __name__ == '__main__':
     CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
     USERNAME = os.environ.get('TASKERBOT_USERNAME')
     PASSWORD = os.environ.get('TASKERBOT_PASSWORD')
-    SUBREDDITS = os.environ.get('SUBREDDIT')
+    SUBREDDIT = os.environ.get('SUBREDDIT')
     USER_AGENT = 'python:taskerbot:(by /u/fwump38)'
 
     logging.basicConfig(stream=sys.stdout, level=logging.INFO,
                         format='%(asctime)s %(levelname)s: %(message)s')
-    logging.info('Logging in…')
+    logging.info('Logging in...')
     MODBOT = Bot(Reddit(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
                         user_agent=USER_AGENT, username=USERNAME,
                         password=PASSWORD))
