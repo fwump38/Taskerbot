@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import html
 import logging
 import re
@@ -7,7 +9,6 @@ import time
 from praw import Reddit
 from praw.models.reddit.comment import Comment
 from praw.models.reddit.submission import Submission
-import yaml
 
 
 class Bot(object):
@@ -173,26 +174,23 @@ class Bot(object):
     def run(self):
         while True:
             logging.info('Running cycle…')
-            for subreddit in SUBREDDITS:
-                try:
-                    self.check_comments(subreddit)
-                    self.check_reports(subreddit)
-                    self.check_mail()
-                except Exception as exception:
-                    logging.exception(exception)
+            try:
+                self.check_comments(SUBREDDIT)
+                self.check_reports(SUBREDDIT)
+                self.check_mail()
+            except Exception as exception:
+                logging.exception(exception)
             logging.info('Sleeping…')
             time.sleep(32) # PRAW caches responses for 30s.
 
 
 if __name__ == '__main__':
-    with open('config.yaml') as config_file:
-        CONFIG = yaml.load(config_file)
-        CLIENT_ID = CONFIG['Client ID']
-        CLIENT_SECRET = CONFIG['Client Secret']
-        USERNAME = CONFIG['Username']
-        PASSWORD = CONFIG['Password']
-        SUBREDDITS = CONFIG['Subreddits']
-        USER_AGENT = CONFIG['User Agent']
+    CLIENT_ID = os.environ.get('CLIENT_ID')
+    CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
+    USERNAME = os.environ.get('TASKERBOT_USERNAME')
+    PASSWORD = os.environ.get('TASKERBOT_PASSWORD')
+    SUBREDDITS = os.environ.get('SUBREDDIT')
+    USER_AGENT = 'python:taskerbot:(by /u/fwump38)'
 
     logging.basicConfig(stream=sys.stdout, level=logging.INFO,
                         format='%(asctime)s %(levelname)s: %(message)s')
