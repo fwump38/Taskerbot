@@ -1,10 +1,14 @@
-Taskerbot
+docker-taskerbot
 =========
 
 A reddit bot to make moderation easier, especially on mobile.
 
 Its main goal is to allow mods to remove posts while leaving removal reasons
 via the bot.
+
+This project was forked from [https://github.com/GermainZ/Taskerbot](GermainZ/Taskerbot)
+
+This version of the project has been altered to support running within a docker.
 
 Usage
 =====
@@ -58,15 +62,6 @@ Dependencies
 Taskerbot requires Python 3. For a list of required Python 3 libraries, see
 ``requirements.txt``.
 
-The required Heroku__ files are provided with this project if you're interested
-in running it on a Heroku app. For example (after setup):
-
-.. code:: py
-
-   heroku ps:scale bot=1 --app app-name-here
-
-__ https://heroku.com/
-
 Requirements
 ------------
 
@@ -79,35 +74,32 @@ Required permissions are: access, flair, posts, and wiki.
 Configuration
 -------------
 
-Taskerbot uses `YAML`_ for its configuration files. You can find a good
-document covering the syntax here__.
+Taskerbot uses environment variables in it's docker run command for configuration.
 
-__ https://docs.ansible.com/ansible/YAMLSyntax.html
+```shell
+docker run -t -i -d \
+  -e CLIENT_ID=xxxxxxx \
+  -e CLIENT_SECRET=xxxxxxx \
+  -e SUBREDDIT=some_subreddit \
+  -e TASKERBOT_USERNAME=some_user \
+  -e TASKERBOT_PASSWORD=xxxxxxx \
+  fwump38/docker-taskerbot
+```
 
-.. _Configuration file:
+### Parameters
 
-Configuration file
-~~~~~~~~~~~~~~~~~~
-
-The ``config.yaml`` file must contain the bot's username, password and a list
-of subreddits to patrol. The syntax is as follows:
-
-.. code:: yaml
-
-   User Agent: 'user agent here'
-   Client ID: 'client id here'
-   Client Secret: 'client secret here'
-   Username: 'bot username here'
-   Password: 'bot password here'
-   Subreddits:
-       - 'SomeSubreddit'
-       - 'AnotherSubreddit'
-       - 'YetAnotherSub'
+* `--restart=always` - ensure the container restarts automatically after host reboot.
+* `-e CLIENT_ID` - The Client ID of the Reddit Bot that will be used. **Required**
+* `-e CLIENT_SECRET` - The Client Secret of the Reddit Bot that will be used. **Required**
+* `-e SUBREDDIT` - The name of the subreddit to monitor. **Required**
+* `-e TASKERBOT_USERNAME` - The Reddit account name of the bot. **Required**
+* `-e TASKERBOT_PASSWORD` - The password to the Reddit account. **Required**
 
 To obtain the client ID and secret, please follow reddit's `OAuth2 First Steps
 guide`_.
 
-Use a `YAML validator`_ to make sure the configuration file is valid.
+**Note:** To run Taskerbot with multiple subreddits, you will need to spin up additional docker containers. 
+This can be simplified using a docker-compose file with each subreddit as it's own service with their own environment variables
 
 .. _Removal reasons:
 
