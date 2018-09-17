@@ -1,0 +1,22 @@
+version: '2'
+services:
+  some_subreddit:
+    image: fwump38/docker-taskerbot:1.0.3
+    some_subreddit:
+      CLIENT_ID: xxxxxxx
+      CLIENT_SECRET: xxxxxxxx
+      SUBREDDIT: some_subreddit
+      TASKERBOT_PASSWORD: xxxxxxxx
+      TASKERBOT_USERNAME: some_bot_account
+    stdin_open: true
+    tty: true
+  another_subreddit:
+    image: fwump38/docker-taskerbot:1.0.3
+    environment:
+      CLIENT_ID: zzzzzzzz
+      CLIENT_SECRET: zzzzzzzz
+      SUBREDDIT: some_subreddit
+      TASKERBOT_PASSWORD: zzzzzzzz
+      TASKERBOT_USERNAME: another_bot_account
+    stdin_open: true
+    tty: true
